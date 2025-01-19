@@ -5,10 +5,122 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        img#product_image {
+            width: 200px;
+        }
+    </style>
 </head>
 
 <body>
 
+    <p>該瀏覽器是否支援 worker ?<span id="worker_enabled"></span></p>
+    <p>請於<span id="countdown"></span>秒內按「確認」按鈕</p>
+
+    <h1>Confirm 頁面</h1>
+    <div>
+        <label>商品名稱: </label>
+        <span id="product_name">
+        </span>
+    </div>
+
+    <div>
+        <label>商品數量: </label>
+        <span id="product_quantity">
+        </span>
+    </div>
+
+    <div>
+        <label>位置資訊經度: </label>
+        <span id="lan"></span>
+    </div>
+
+    <div>
+        <label>位置資訊緯度: </label>
+        <span id="lat"></span>
+    </div>
+
+    <div>
+        <label>商品圖: </label>
+        <img id="product_img" src="">
+    </div>
+
+    <div>
+        <button type="button" id="confirm_btn">確認</button>
+        <button type="button" id="back_btn">重填</button>
+    </div>
+
+    <script>
+        var countdown_timer = window.addEventListener("load", function (e) {
+
+            var preview_func = function () {
+                var product_name_el = document.getElementById("product_name");
+                var product_count_el = document.getElementById("product_quantity");
+                var lng_el = document.getElementById("lan");
+                var lat_el = document.getElementById("lat");
+                var product_image_el = document.getElementById("product_img");
+
+                var form_data = JSON.parse(sessionStorage.getItem("form_data"));
+
+
+                product_name_el.innerHTML = form_data.p_name;
+                product_count_el.innerHTML = form_data.p_count;
+                lng_el.innerHTML = form_data.location.lang;
+                lat_el.innerHTML = form_data.location.lat;
+                product_image_el.setAttribute("src", form_data.img_base64);
+
+            };
+
+            preview_func();
+
+            //啟動計時
+
+            var countdown_func = function () {
+
+                if (window.Worker) {
+                    document.getElementById("worker_enabled").innerHTML = "有支援";
+
+                    worker_countdown = new Worker("./homework/worker_countdown.js");
+                    worker_countdown.postMessage(10);
+                    worker_countdown.addEventListener("message", function (e) {
+                        console.log("收到 worker 資料" + e.data);
+                        if (e.data >= 0) {
+                            document.getElementById("countdown").innerHTML = e.data;
+
+                        } else {
+                            history.back();
+                        }
+                    });
+                } else {
+                    document.getElementById("worker_enabled").innerHTML = "不支援";
+                }
+            };
+            countdown_func();
+
+            //按鈕事件綁定
+            var confirm_btn_el = document.getElementById("confirm_btn");
+            confirm_btn_el.addEventListener("click", function () {
+                worker_countdown.terminate();
+                alert("感謝您的確認");
+            });
+
+            var back_btn_el = document.getElementById("back_btn");
+            back_btn_el.addEventListener("click", function () {
+                history.back();
+            });
+
+        });
+
+
+        // var get_data = JSON.parse(sessionStorage.getItem("form_data"));
+        // console.log(JSON.parse(sessionStorage.getItem("form_data")));
+        // document.getElementById("product_name").innerHTML = "46";
+        // document.getElementById("product_quantity").innerHTML = sessionStorage.getItem("form_data");
+        // document.getElementById("lan").innerHTML = sessionStorage.getItem("form_data");
+        // document.getElementById("lat").innerHTML = sessionStorage.getItem("form_data");
+        // document.getElementById("product_img").innerHTML = sessionStorage.getItem("form_data");
+
+    </script>
 </body>
 
 </html>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant" id="the_html">
 
 <head>
     <meta charset="UTF-8">
@@ -7,12 +7,24 @@
     <title>Document</title>
     <link rel="stylesheet" type="text/css" href="form.css">
     <!-- 從外部注入css設定 -->
+    <style>
+        input[disabled] {
+            background: #efefef !important;
+            cursor: not-allowed;
+        }
+
+        #preview.-on {
+            box-shadow: 5px 5px 15px white inset, -5px -5px 15px white inset;
+        }
+    </style>
 </head>
 
 <body>
     <article class="info">
         <form action="#" method="#" id="the_form">
             <div class="content_block">
+
+                <!-- <input type="file" id="p_file"> -->
 
                 <div class="left_block">
                     <input type="file" id="p_file">
@@ -50,8 +62,8 @@
                     </div>
 
                     <div class="right_block">
-                        <button type="reset">清空資料</button>
-                        <button type="submit" id="btn_submit">送出資料</button>
+                        <button type="reset" id="btn_reset">清空資料</button>
+                        <button type="submit" id="btn_submit" onclick="location.href = './confirm.html'">送出資料</button>
                     </div>
                 </div>
                 <p>是否有支援全螢幕模式：<span id="fullscreen_enable"></span></p>
@@ -59,6 +71,278 @@
             </footer>
         </form>
     </article>
+
+    <script>
+        // 元素
+        var p_count_el = document.getElementById("p_count");
+        var p_count_value_el = document.getElementById("p_count_value");
+        var the_form_el = document.getElementById("the_form");
+        var btn_fullscreen_el = document.getElementById("btn_fullscreen");
+        var the_html = document.getElementById("the_html");
+        var fullscreen_enable_el = document.getElementById("fullscreen_enable");
+        var geolocation_enable_el = document.getElementById("geolocation_enable");
+        var lng_el = document.getElementById("lng");
+        var lat_el = document.getElementById("lat");
+        var drop_zone_el = document.getElementById("drop_zone");
+        var preview_el = document.getElementById("preview");
+        var p_file_el = document.getElementById("p_file");
+        var btn_submit_el = document.getElementById("btn_submit");
+        var p_name_el = document.getElementById("p_name");
+        var btn_reset_el = document.getElementById("btn_reset");
+
+        //表單
+        //將商品數量的預設值 放進 span#p_count_value裡
+        var reset_p_count_value = function () {
+            p_count_value_el.innerHTML = p_count_el.value;
+        };
+
+        reset_p_count_value();
+
+        //商品數量拖曳時觸發
+        p_count_el.addEventListener("input", function () {
+            reset_p_count_value();
+        })
+
+        //reset 按鍵按下去時觸發
+        the_form_el.addEventListener("reset", function () {
+            p_count_value_el.innerHTML = p_count_value_el.getAttribute("data-default");
+
+            //以下三行在步驟一還不需要
+            check_geolocation_enabled();
+            preview_el.innerHTML = '<span class="text>預覽圖</span>';
+            sessionStorage.clear();
+
+        });
+
+        //full screen
+        //判斷有無支援全螢幕
+        var check_fullscreen_enabled = function () {
+            //console.log(document.fullscreenEnabled);
+            if (document.fullscreenEnabled) {
+                fullscreen_enable_el.innerHTML = "是"
+            } else {
+                fullscreen_enable_el.innerHTML = "否";
+            }
+        };
+
+
+        //按下全螢幕按鈕後
+        document.addEventListener("fullscreenchange", function () {
+            //console.log(document.fullscreenElement);
+            if (document.fullscreenElement) {
+                console.log("進入全螢幕模式");
+                btn_fullscreen_el.innerHTML = "退出全螢幕模式";
+            } else {
+                console.log("退出全螢幕模式");
+                btn_fullscreen_el.innerHTML = "進入全螢幕模式";
+            }
+        });
+
+        function fullscreen_mode(element) {
+            var screenelement = document.getElementById(element);
+            console.log(document.fullscreenElement);
+            if (!document.fullscreenElement) { // 判斷是否有元素已經是全螢幕
+                screenelement.requestFullscreen(); // 該元素進入全螢幕 
+            }
+            else {
+                document.exitFullscreen(); // 退出全螢幕
+            }
+        }
+
+        btn_fullscreen_el.addEventListener("click", function () {
+            fullscreen_mode("the_html");
+        });
+
+        //判斷是否有支援地理資訊定位
+        var check_geolocation_enabled = function () {
+            if (navigator.geolocation) {
+                // 有支援
+                geolocation_enable_el.innerHTML = "是";
+
+                navigator.geolocation.getCurrentPosition(function (position) {
+
+                    // 取得 position 位置資訊，可於 console 中印出來看看
+                    console.log(position);
+
+                    // lng_el.readOnly = false;
+                    // lat_el.readOnly = false;
+
+                    lng_el.value = position.coords.longitude;
+                    lat_el.value = position.coords.latitude;
+
+                    // lat_el.setAttribute("disabled", false);
+
+                }, function (error) {
+
+                    // 使用者不同意取得位置資訊時
+                    console.log('使用者不同意取得位置資訊或尚未取得位置資訊：ERROR(' + error.code + '): ' + error.message);
+                    lng_el.setAttribute("disabled", true);
+                    lat_el.setAttribute("disabled", true);
+                });
+
+            } else {
+                geolocation_enable_el.innerHTML = "否";
+            }
+        };
+
+        //拖曳圖片
+        preview_el.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            console.log("dragover");
+            // drop_zone_el.setAttribute("class", "-on");
+        });
+
+        var image_base64;
+
+        preview_el.addEventListener("drop", function (e) {
+            e.preventDefault();
+            console.log("drop");
+
+            console.log(e.dataTransfer.files[0]); // File
+
+            console.log(e.dataTransfer.files);
+            preview_el.classList.remove("-on");
+
+            var picture_list = document.getElementById("preview");
+            picture_list.innerHTML = ""; // 清空
+
+            let reader = new FileReader(); // 用來讀取檔案
+            reader.readAsDataURL(e.dataTransfer.files[0]); // 讀取檔案
+            reader.addEventListener("load", function () {
+                image_base64 = reader.result;
+                console.log(reader.result); //data:image/png; 編碼 base64
+                let li_html = `<li><img src="${reader.result}" class="preview_img"></li>`;
+                picture_list.insertAdjacentHTML("beforeend", li_html); // 加進節點
+            });
+
+        });
+
+        // 拖曳進去
+        preview_el.addEventListener("dragenter", function (e) {
+            preview_el.classList.add("-on"); // 加上 class
+        });
+        // 拖曳離開
+        preview_el.addEventListener("dragleave", function (e) {
+            preview_el.classList.remove("-on"); // 移除 class
+        });
+
+
+        //透過 File 物件顯示預覽圖
+
+        var preview_img = function (file) {
+
+            let reader = new FileReader(); // 用來讀取檔案
+            reader.readAsDataURL(file); // 讀取檔案
+            reader.addEventListener("load", function () {
+                console.log(reader.result);  //data:image/png; 編碼 base64
+                let li_html = `<img src="${reader.result}" class="preview_img">`;
+                preview_el.innerHTML = li_html;
+            })
+
+        };
+
+        preview_el.addEventListener("click", function () {
+            p_file_el.click();
+        });
+
+        p_file_el.addEventListener("change", function (e) {
+
+            if (this.files.length > 0) {
+                preview_img(this.files[0]);
+            } else {
+                preview_el.innerHTML = '<span class="text">預覽圖</span>';
+            }
+        });
+
+        //資料送出
+        btn_submit_el.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            var submit_data = {};
+            submit_data.p_name = p_name_el.value;
+            submit_data.p_count = p_count_el.value;
+
+            var img_base64_el = document.querySelector(".preview_img");
+            submit_data.img_base64 = img_base64_el.getAttribute("src");
+
+            submit_data.location = {
+                lang: lng_el.value,
+                lat: lat_el.value
+            };
+
+            sessionStorage.setItem("form_data", JSON.stringify(submit_data));
+            location.href = "./confirm.html";
+
+        });
+
+
+
+        // p_file_el.addEventListener("change", function () {
+
+        //     console.log("get picture");
+        //     console.log("change 事件觸發");
+        //     console.log(this);
+        //     console.log(this.files);    // FileList
+        //     console.log(this.files[0]); // File
+        //     // 寫在這
+        //     var picture_list = document.getElementById("preview");
+        //     picture_list.innerHTML = ""; // 清空
+
+        //     // 跑每個使用者選的檔案，留意 i 的部份
+
+        //     let reader = new FileReader(); // 用來讀取檔案
+        //     reader.readAsDataURL(this.files[0]); // 讀取檔案
+        //     reader.addEventListener("load", function () {
+        //         console.log(reader.result);  //data:image/png; 編碼 base64
+        //         let li_html = `<li><img src="${reader.result}" class="preview_img"></li>`;
+        //         picture_list.insertAdjacentHTML("beforeend", li_html); // 加進節點
+        //     });
+
+
+
+        // });
+
+        //送出資料(用sesionStorage)
+
+        // var deliver_data = function () {
+
+        //     var obj = {
+        //         "p_name": p_name_el.value,
+        //         "p_count": p_count_el.value,
+        //         "img_base64": "image_base64",
+        //         "position": {
+        //             "lng": lng_el.value,
+        //             "lat": lat_el.value
+        //         }
+        //     }
+        //     sessionStorage.setItem("form_data", JSON.stringify(obj));
+
+        //     console.log(JSON.parse(sessionStorage.getItem("form_data")));
+
+        // }
+
+
+        //將session資料寫到表單中
+        var recovery_data = function () {
+            if (sessionStorage.getItem("form_data") != null) {
+                var form_data = JSON.parse(sessionStorage.getItem("form_data"));
+
+                p_name_el.value = form_data.p_name;
+                p_count_el.value = form_data.p_count;
+                p_count_value_el.innerHTML = form_data.p_count;
+
+                lng_el.value = form_data.location.lng;
+                lat_el.value = form_data.location.lat;
+                preview_el.innerHTML = "<img class='preview_img' src='" + form_data.img_base64 + "'>";
+            }
+        };
+
+        //函式觸發
+        check_fullscreen_enabled();
+        check_geolocation_enabled();
+        recovery_data();
+
+    </script>
 </body>
 
 </html>
