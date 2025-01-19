@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="form.css">
+    <!-- 從外部注入css設定 -->
+</head>
+
+<body>
+    <article class="info">
+        <form action="#" method="#" id="the_form">
+            <div class="content_block">
+
+                <div class="left_block">
+                    <input type="file" id="p_file">
+                    <div id="preview" class="drop_zone">
+                        <span class="text">預覽圖</span>
+                    </div>
+                </div>
+
+                <div class="right_block">
+
+                    <div class="block">
+                        <label>商品名稱：</label>
+                        <input type="text" id="p_name" autocomplete="off">
+                    </div>
+
+                    <div class="block -middle">
+                        <label>商品數量：</label>
+                        <input type="range" min="1" max="10" value="1" id="p_count">
+                        <span id="p_count_value" data-default="1"></span>
+                    </div>
+
+                    <div class="block">
+                        <label>經度：</label><input type="text" id="lng" readonly>
+                        <label>緯度：</label><input type="text" id="lat" readonly>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <footer class="footer">
+                <div class="action_block">
+                    <div class="left_block">
+                        <button type="button" id="btn_fullscreen">進入全螢幕模式</button>
+                    </div>
+
+                    <div class="right_block">
+                        <button type="reset">清空資料</button>
+                        <button type="submit" id="btn_submit">送出資料</button>
+                    </div>
+                </div>
+                <p>是否有支援全螢幕模式：<span id="fullscreen_enable"></span></p>
+                <p>是否有支援地理資訊定位：<span id="geolocation_enable"></span></p>
+            </footer>
+        </form>
+    </article>
+</body>
+
+</html>
