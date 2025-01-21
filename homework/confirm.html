@@ -80,7 +80,7 @@
                 if (window.Worker) {
                     document.getElementById("worker_enabled").innerHTML = "有支援";
 
-                    worker_countdown = new Worker("./homework/worker_countdown.js");
+                    worker_countdown = new Worker("./js/worker_countdown.js");
                     worker_countdown.postMessage(10);
                     worker_countdown.addEventListener("message", function (e) {
                         console.log("收到 worker 資料" + e.data);
