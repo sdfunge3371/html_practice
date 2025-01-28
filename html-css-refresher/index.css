@@ -1,0 +1,32 @@
+table, th,td {
+    border: 1px solid;
+}
+
+thead tr {
+    background-color:antiquewhite;
+}
+
+tbody tr:nth-child(odd) {
+    background-color: aquamarine;
+}
+
+tbody tr:nth-child(even) {
+    background-color:cadetblue;
+}
+
+#about:hover {
+    color:chocolate;
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.heading {
+    font-size: 2em;
+    color:cornflowerblue;
+}
+
+.heading::first-letter {
+    font-size: 3em;
+    font-weight: 1;
+}
+
